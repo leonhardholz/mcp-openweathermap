@@ -1,6 +1,6 @@
 # MPC OpenWeatherMap Server
 
-A simple MCP server that provides hourly weather forecasts using the OpenWeatherMap API.
+A simple MCP server that provides current weather information using the OpenWeatherMap API.
 
 ## Setup
 
@@ -35,7 +35,7 @@ You can get an API key by registering at [OpenWeatherMap API](https://openweathe
 
 ## API Usage
 
-### Get Hourly Weather Forecast
+### Get Current Weather
 
 Response:
 ```json
@@ -54,30 +54,21 @@ Response:
         "weather_text": "clear sky",
         "feels_like": 17.5,
         "humidity": 65,
+        "pressure": 1013,
         "wind_speed": 2.5,
-        "observation_time": 1683721962
-    },
-    "hourly_forecast": [
-        {
-            "relative_time": "+1 hour",
-            "temperature": {
-                "value": 18.5,
-                "unit": "C"
-            },
-            "weather_text": "clear sky",
-            "precipitation_probability": 0,
-            "humidity": 64,
-            "wind_speed": 2.7
-        }
-    ]
+        "wind_direction": 180,
+        "cloudiness": 10,
+        "observation_time": 1683721962,
+        "visibility": 10000
+    }
 }
 ```
 
 The API provides:
 - Current weather conditions including temperature, weather description, humidity, and wind speed
-- 12-hour forecast with hourly data including:
-  - Relative time from current time
-  - Temperature in Celsius
-  - Weather description
-  - Precipitation probability
-  - Humidity and wind speed 
+- Additional details such as:
+  - Atmospheric pressure
+  - Wind direction
+  - Cloudiness percentage
+  - Visibility
+  - Rain and snow data (when applicable) 

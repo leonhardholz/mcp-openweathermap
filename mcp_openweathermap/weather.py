@@ -47,8 +47,8 @@ def cache_location_info(location: str, location_info: Dict):
         print(f"Warning: Failed to cache location info: {e}")
 
 @mcp.tool()
-async def get_hourly_weather(location: str) -> Dict:
-    """Get hourly weather forecast for a location."""
+async def get_current_weather(location: str) -> Dict:
+    """Get current weather for a location."""
     api_key = os.getenv("OPENWEATHERMAP_API_KEY")
     if not api_key:
         raise Exception("OPENWEATHERMAP_API_KEY environment variable not set")
@@ -97,54 +97,51 @@ async def get_hourly_weather(location: str) -> Dict:
             }
             cache_location_info(location, location_info)
         
-        # Get current conditions and hourly forecast using One Call API
-        onecall_url = f"{base_url}/onecall"
+        # Get current weather using Weather API
+        current_weather_url = f"{base_url}/weather"
         params = {
             "lat": lat,
             "lon": lon,
-            "exclude": "minutely,daily,alerts",
             "units": "metric",
             "appid": api_key
         }
         
-        async with session.get(onecall_url, params=params) as response:
+        async with session.get(current_weather_url, params=params) as response:
             weather_data = await response.json()
             if response.status != 200:
                 raise Exception(f"Error fetching weather data: {response.status}, {weather_data}")
         
-        # Format current conditions
-        current = weather_data["current"]
+        # Format current conditions based on Current Weather API response
         current_data = {
             "temperature": {
-                "value": current["temp"],
+                "value": weather_data["main"]["temp"],
                 "unit": "C"
             },
-            "weather_text": current["weather"][0]["description"],
-            "feels_like": current["feels_like"],
-            "humidity": current["humidity"],
-            "wind_speed": current["wind_speed"],
-            "observation_time": current["dt"]
+            "weather_text": weather_data["weather"][0]["description"],
+            "feels_like": weather_data["main"]["feels_like"],
+            "humidity": weather_data["main"]["humidity"],
+            "pressure": weather_data["main"]["pressure"],
+            "wind_speed": weather_data["wind"]["speed"],
+            "wind_direction": weather_data["wind"]["deg"],
+            "cloudiness": weather_data["clouds"]["all"],
+            "observation_time": weather_data["dt"]
         }
         
-        # Format hourly forecast
-        hourly_data = []
-        for i, hour in enumerate(weather_data["hourly"][:12], 1):
-            hourly_data.append({
-                "relative_time": f"+{i} hour{'s' if i > 1 else ''}",
-                "temperature": {
-                    "value": hour["temp"],
-                    "unit": "C"
-                },
-                "weather_text": hour["weather"][0]["description"],
-                "precipitation_probability": hour.get("pop", 0) * 100,
-                "humidity": hour["humidity"],
-                "wind_speed": hour["wind_speed"]
-            })
+        # Add rain data if available
+        if "rain" in weather_data:
+            current_data["rain"] = weather_data["rain"]
+        
+        # Add snow data if available
+        if "snow" in weather_data:
+            current_data["snow"] = weather_data["snow"]
+        
+        # Add visibility if available
+        if "visibility" in weather_data:
+            current_data["visibility"] = weather_data["visibility"]
         
         return {
-            "location": location_name,
+            "location": weather_data["name"],
             "coordinates": {"lat": lat, "lon": lon},
-            "country": country_name,
-            "current_conditions": current_data,
-            "hourly_forecast": hourly_data
+            "country": weather_data["sys"]["country"],
+            "current_conditions": current_data
         } 
