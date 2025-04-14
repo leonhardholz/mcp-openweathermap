@@ -1,0 +1,18 @@
+[project]
+name = "mcp-openweathermap"
+version = "0.1.0"
+description = "OpenWeatherMap forecast tool for MCP"
+authors = []
+dependencies = [
+    "fastmcp",
+    "python-dotenv",
+    "aiohttp",
+    "uvicorn",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+mcp-openweathermap = "mcp_openweathermap.weather:mcp.run" 
